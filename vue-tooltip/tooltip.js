@@ -76,19 +76,29 @@ export default {
 
     function getOptimalPosition() {
       const rect = el.getBoundingClientRect();
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
 
       // Se l'utente ha specificato una posizione, usala
       if (binding.arg) {
         return binding.arg;
       }
 
+      // Cache hit: se elemento non si è mosso, riusa posizione calcolata
+      if (lastRect &&
+        lastRect.top === rect.top &&
+        lastRect.left === rect.left &&
+        cachedPos) {
+        return cachedPos;
+      }
+
+      // Aggiorna lastRect
+      lastRect = { top: rect.top, left: rect.left };
+
       // Calcola spazio disponibile in ogni direzione
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
-      
+
       // Dimensioni approssimate del tooltip (deve essere visible per misurarle)
+      tooltip.style.visibility = 'visible';
       tooltip.style.opacity = '0';
       const tooltipRect = tooltip.getBoundingClientRect();
       tooltip.style.opacity = '1';
@@ -108,19 +118,20 @@ export default {
 
       // Filtra posizioni che hanno abbastanza spazio
       const validPositions = positions.filter(pos => pos.space >= pos.needed);
-      
+
       // Se ci sono posizioni valide, scegli quella con più spazio
       if (validPositions.length > 0) {
-        return validPositions.reduce((best, current) => 
+        cachedPos = validPositions.reduce((best, current) =>
+          current.space > best.space ? current : best
+        ).name;
+      } else {
+        // Se nessuna posizione ha abbastanza spazio, scegli quella con più spazio disponibile
+        cachedPos = positions.reduce((best, current) =>
           current.space > best.space ? current : best
         ).name;
       }
-     
-      // Se nessuna posizione ha abbastanza spazio, scegli quella con più spazio disponibile
-      return positions.reduce((best, current) => 
-        current.space > best.space ? current : best
-      ).name;
 
+      return cachedPos;
     }
 
     function setPosition(event) {
@@ -152,7 +163,7 @@ export default {
           left = rect.left + scrollLeft + rect.width / 2 - tooltip.offsetWidth / 2;
           break;
       }
-  
+
       tooltip.style.top = `${top}px`;
       tooltip.style.left = `${left}px`;
     }
@@ -166,21 +177,45 @@ export default {
       tooltip.style.visibility = 'hidden';
     }
 
-    el.addEventListener('mouseenter', show);
-//    el.addEventListener('mousemove', setPosition);
+    // Supporto tastiera
+    function showOnFocus(e) { show(e); }
+    function hideOnBlur() { hide(); }
+
+    // Delay configurabile
+    const delay = binding.modifiers.delay ? 300 : 0;
+    let timeout;
+
+    function debouncedShow(e) {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => show(e), delay);
+    }
+
+    // Memorizzazione posizione
+    let cachedPos = null;
+    let lastRect = null;
+
+    // Event listeners
+    el.addEventListener('mouseenter', debouncedShow);
     el.addEventListener('mouseleave', hide);
+    el.addEventListener('focus', showOnFocus);
+    el.addEventListener('blur', hideOnBlur);
+
+    el._cleanup = () => {
+      clearTimeout(timeout);
+      el.removeEventListener('mouseenter', debouncedShow);
+      el.removeEventListener('mouseleave', hide);
+      el.removeEventListener('focus', showOnFocus);
+      el.removeEventListener('blur', hideOnBlur);
+    };
 
     el._tooltip = tooltip;
     el._show = show;
     el._hide = hide;
   },
   unmounted(el) {
-    el.removeEventListener('mouseenter', el._show);
-//    if (setPosition) el.removeEventListener('mousemove', setPosition);
-    el.removeEventListener('mouseleave', el._hide);
+    el._cleanup?.();
     if (el._tooltip) {
       document.body.removeChild(el._tooltip);
-      delete el._tooltip;
     }
   },
 };

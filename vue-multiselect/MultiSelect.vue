@@ -1,5 +1,3 @@
-Considera il componente Vue3 di questo codice. Prepara quanto necessari per la pubblicazione su github: readme.md con elenco proprietà, codice di esempio e istruzioni per l'utilizzo
-
 <template>
   <!-- Wrapper con direttiva custom per chiudere dropdown clickando fuori -->
   <div ref="wrapper" class="multi-select-wrapper" v-click-outside="closeDropdown">
@@ -27,7 +25,7 @@ Considera il componente Vue3 di questo codice. Prepara quanto necessari per la p
               class="remove-button"
               @click.stop="removeItem(item.item)"
               :title="`Rimuovi ${item.display}`">
-              <i class="pi pi-times"></i>
+              ×
             </button>
           </slot>
         </div>
@@ -52,7 +50,7 @@ Considera il componente Vue3 di questo codice. Prepara quanto necessari per la p
           @keydown.enter.prevent="selectHighlighted"
         />
         <div class="search-icon">
-          <i class="pi pi-search"></i>
+          🔍
         </div>
       </div>
 

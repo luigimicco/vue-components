@@ -14,6 +14,8 @@
         class="otp-box"
         autocomplete="one-time-code"
         :autofocus="idx === 0"
+        :aria-label="`Cifra ${idx + 1} di ${digits}`"
+        :aria-invalid="hasError"        
       />
     </div>
 
@@ -34,8 +36,16 @@ export default {
     allowedChars: {
       type: String,
       default: "digits", // default will allow only digits
-    },    
-  },
+    }, 
+    size: { 
+      type: String, 
+      default: 'medium',
+      validator: v => ['small', 'medium', 'large'].includes(v)
+    },
+    hasError: { type: Boolean, default: false },  
+  },    
+  emits: ['update:modelValue', 'complete'],
+  
   data() {
     return {
       otp: Array.from({ length: this.digits }, (_,i) => this.modelValue[i]), 
@@ -100,10 +110,15 @@ export default {
   watch: {
     otp: {
       handler(newVal) {
-        this.$emit("update:modelValue", newVal.join(""));
+        const code = newVal.join("");
+        this.$emit("update:modelValue", code);
+        
+        if (code.length === this.digits && !code.includes('')) {
+          this.$emit('complete', code);
+        }
       },
-      deep: true,
-    },
+      deep: true
+    }
   },
 };
 </script>
@@ -111,6 +126,11 @@ export default {
 <style scoped>
 
 .otp-inputs {
+  --otp-size: 48px;
+  --otp-border: #20256d;
+  --otp-focus: #377dff;
+  --otp-error: #ef4444;
+
   display: flex;
   gap: 16px;
   margin: 1rem 0 1rem 0;
@@ -125,8 +145,21 @@ export default {
   outline: none;
   transition: box-shadow 0.2s;
 }
+
+.otp-box[aria-invalid="true"] {
+  border-color: var(--otp-error);
+  animation: shake 0.3s;
+}
+
 .otp-box:focus {
   box-shadow: 0 0 10px 2px #bed7ff;
   border-color: #377dff;
 }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
 </style>

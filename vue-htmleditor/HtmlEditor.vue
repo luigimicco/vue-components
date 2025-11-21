@@ -544,97 +544,33 @@ export default {
           this.onInput();
       },
       
-      applyFont(event) {
-          const selection = window.getSelection();
-          if (!selection.rangeCount) return;
-          
-          const range = selection.getRangeAt(0);
-          if (range.collapsed) {
-              alert('Seleziona del testo per applicare il font');
-              return;
-          }
-          
-          // Extract the selected content
-          const contents = range.extractContents();
-          
-          // Create span element with font-family style
-          const span = document.createElement('span');
-          span.style.fontFamily = this.selectedFont;
-          span.appendChild(contents);
-          
-          // Insert the span
-          range.insertNode(span);
-          
-          // Reselect the formatted text
-          range.selectNode(span);
-          selection.removeAllRanges();
-          selection.addRange(range);
-          
-          this.onInput();
+      // Refactoring: metodo generico per stili
+      applyStyle(styleProp, styleValue) {
+        const selection = window.getSelection();
+        if (!selection.rangeCount) return;
+        
+        const range = selection.getRangeAt(0);
+        if (range.collapsed) {
+          this.$emit('show-notification', 'Seleziona del testo');
+          return;
+        }
+        
+        const contents = range.extractContents();
+        const span = document.createElement('span');
+        span.style[styleProp] = styleValue;
+        span.appendChild(contents);
+        range.insertNode(span);
+        
+        this.onInput();
       },
-      
 
-/* 
-      formatStrike(event) {
-          const selection = window.getSelection();
-          if (!selection.rangeCount) return;
-          
-          const range = selection.getRangeAt(0);
-          if (range.collapsed) {
-              alert('Seleziona del testo per applicare la formattazione');
-              return;
-          }
-          
-          // Extract the selected content
-          const contents = range.extractContents();
-          
-          // Create span element with font-family style
-          const span = document.createElement('span');
-          span.style.textDecoration = "line-through";
-          span.appendChild(contents);
-          
-          // Insert the span
-          range.insertNode(span);
-          
-          // Reselect the formatted text
-          range.selectNode(span);
-          selection.removeAllRanges();
-          selection.addRange(range);
-          
-          this.onInput();
-
-
+      applyFont() { 
+        this.applyStyle('fontFamily', this.selectedFont);
       },
-       */
-      applyColor(event) {
-          const selection = window.getSelection();
-          if (!selection.rangeCount) return;
-          
-          const range = selection.getRangeAt(0);
-          if (range.collapsed) {
-              alert('Seleziona del testo per applicare il colore');
-              return;
-          }
-          
-          // Extract the selected content
-          const contents = range.extractContents();
-          
-          // Create span element with color style
-          const span = document.createElement('span');
-          span.style.color = this.selectedColor;
-          span.appendChild(contents);
-          
-          // Insert the span
-          range.insertNode(span);
-          
-          // Reselect the formatted text
-          range.selectNode(span);
-          selection.removeAllRanges();
-          selection.addRange(range);
-          
-          this.onInput();
-      },
-      
+      applyColor() {
+        this.applyStyle('color', this.selectedColor);
+      } ,    
+   
       removeFormatting() {
           const selection = window.getSelection();
           if (!selection.rangeCount) return;
@@ -1134,15 +1070,6 @@ export default {
   min-height: 100%;
   line-height: 1.5;
   color: #333;
-}
-
-.html-source-readonly {
-  flex: 1;
-  background: #f9fafb;
-  padding: 16px;
-  border-left: 1px solid #e0e0e0;
-  color: #555;
-  font-family: 'Courier New', monospace;
 }
 
 .html-source:focus {

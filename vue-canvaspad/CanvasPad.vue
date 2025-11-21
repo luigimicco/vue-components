@@ -6,6 +6,8 @@
 
     <div class="canvas">
       <canvas
+        :aria-label="`Canvas di disegno ${percent}% compilato`"
+        role="img"
         ref="canvas"
         :width="width"
         :height="height"
@@ -22,10 +24,6 @@
           <slot name="tools"></slot>
       </div>
     </div>
-
-<!--     <div v-if="imageUrl" style="margin-top:10px;">
-      <img :src="imageUrl" :width="width/2" :height="height/2" alt="Disegno salvato" />
-    </div> -->
   </div>
 </template>
 
@@ -62,7 +60,7 @@ export default {
     this.ctx = this.$refs.canvas.getContext('2d',{ willReadFrequently: true });
     if (this.modelValue) {
       // carica l'immagine presente nel modelValue
-      var image = new Image();
+      let image = new Image();
       image.onload = () => { this.ctx.drawImage(image, 0, 0) }
       image.src = this.modelValue;
     } else {
@@ -81,6 +79,14 @@ export default {
   created() {
     this.debouncedUpdatePercent = debounce(this.updatePercent, 300);
   },
+
+  // Fix memory leak
+  beforeUnmount() {
+    if (this.debouncedUpdatePercent?.cancel) {
+      this.debouncedUpdatePercent.cancel();
+    }
+  },
+
   methods: {
 
     getCanvasCoords(event) {
@@ -168,26 +174,23 @@ export default {
     getFillPercentage() {
       if ( !this.ctx) return 0;
       
-      const dataUrl = this.getImageData()
-      const tempCtx = this.ctx;
-      const pixelBuffer = new Uint32Array(
-        tempCtx.getImageData(0, 0, this.width, this.height).data.buffer
-      );
+      const imageData = this.ctx.getImageData(0, 0, this.width, this.height);
+      const pixels = new Uint32Array(imageData.data.buffer);
+      
+      let usedPixels = 0;
+      const threshold = pixels.length * this.minPercent / 100;
 
-      let usedPixels = 0; 
-      const maxPixels = this.width * this.height;
-      const limit = maxPixels * (this.minPercent + 1) / 100;
-      for (let index = 0; index < pixelBuffer.length; index++) {
-        if (pixelBuffer[index] !== this.backgroundPixel) usedPixels++;
-        if (usedPixels > limit) break;
+      // Early exit quando raggiungiamo la soglia
+      for (let i = 0; i < pixels.length; i++) {
+        if (pixels[i] !== this.backgroundPixel) {
+          usedPixels++;
+          if (usedPixels > threshold) break;
+        }
       }
-      const percent = (usedPixels/maxPixels)*100
+      
+      const percent = (usedPixels / pixels.length) * 100;
+      this.image = percent >= this.minPercent ? this.getImageData() : null;
 
-      if (percent >= this.minPercent) {
-        this.image = dataUrl;
-      } else {
-        this.image = null;
-      }
       this.$emit('update:modelValue', this.image); // v-model compatibilità
       return percent;
 

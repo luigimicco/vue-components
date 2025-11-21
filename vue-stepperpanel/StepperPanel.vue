@@ -6,9 +6,19 @@
         :class="['step-item', { active: i-1 === currentStep, completed: i <= currentStep }]"
         :key="'point_' + i"
       >
-        ```
-        <div class="step-number" @click="goToStep(i - 1)">{{ i }}</div>
-        ```
+
+        <div 
+          class="step-number"
+          role="button"
+          :tabindex="canNavigateToStep(i-1) ? 0 : -1"
+          :aria-label="`Step ${i}`"
+          :aria-current="i-1 === currentStep ? 'step' : undefined"
+          @click="goToStep(i - 1)"
+          @keydown.enter="goToStep(i - 1)"
+          @keydown.space.prevent="goToStep(i - 1)"
+        >
+          {{ i }}
+        </div>
         <div v-if="i < stepSlots.length" class="step-line"></div>
       </div>
     </div>
@@ -18,13 +28,13 @@
         :class="['step-title-item', { active: i-1 === currentStep, completed: i <= currentStep }]"
         :key="'title_' + i"
       >
-        ```
         <div class="step-title"><slot :name="'label-' + (i-1)" /></div>
-        ```
       </div>
     </div>
 
-    <div class="stepper-content">
+    <div class="stepper-content"
+    role="tabpanel"
+      :aria-labelledby="`step-${currentStep}-label`">
       <slot :name="'step-' + currentStep" />
     </div>
 
@@ -49,7 +59,8 @@ export default {
     allowClickNavigation: {
       type: Boolean,
       default: true
-    }
+    },
+    validateStep: { type: Function, default: null }
   },
   emits: ['update:modelValue', 'step-change', 'step-completed'],
   computed: {
@@ -72,7 +83,14 @@ export default {
     }
   },
   methods: {
-    nextStep() {
+    async nextStep() {
+      if (this.validateStep) {
+        const isValid = await this.validateStep(this.currentStep);
+        if (!isValid) {
+          this.$emit('step-validation-failed', this.currentStep);
+          return;
+        }
+      }
       if (this.currentStep < this.stepSlots.length - 1) {
         const newStep = this.currentStep + 1;
         this.changeStep(newStep); 
@@ -92,6 +110,12 @@ export default {
         this.changeStep(index);
       }
     },
+  
+    canNavigateToStep(index) {
+      if (!this.allowClickNavigation) return false;
+      if (this.linear && index > this.currentStep + 1) return false;
+      return true;
+    },  
     changeStep(newStep) {
       const oldStep = this.currentStep;
       this.currentStep = newStep;
