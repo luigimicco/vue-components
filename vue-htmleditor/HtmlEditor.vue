@@ -1,7 +1,17 @@
 <template>
-  <div class="html-editor-container" :class="{ 'readonly': readonly }">
+  <div 
+    class="html-editor-container" 
+    :class="{ 'readonly': readonly }"
+    role="region"
+    aria-label="Editor HTML"
+  >
     <!-- Readonly indicator -->
-    <div v-if="readonly" class="readonly-indicator">📖 Modalità sola lettura</div>
+    <div 
+      v-if="readonly" 
+      class="readonly-indicator"
+      role="status"
+      aria-live="polite"
+    >📖 Modalità sola lettura</div>
 
     <!-- Toolbar -->
     <EditorToolbar

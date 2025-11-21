@@ -1,8 +1,13 @@
 <template>
-  <div class="toolbar">
+  <div class="toolbar" role="toolbar" aria-label="Barra strumenti editor">
     <!-- Font selector -->
     <div class="toolbar-group" v-if="toolbar.includes('font')">
-      <select v-model="localFont" @change="$emit('apply-font', localFont)" class="toolbar-select">
+      <select 
+        v-model="localFont" 
+        @change="$emit('apply-font', localFont)" 
+        class="toolbar-select"
+        aria-label="Seleziona font"
+      >
         <option value="Arial">Arial</option>
         <option value="Times New Roman">Times New Roman</option>
         <option value="Courier New">Courier New</option>
@@ -11,7 +16,12 @@
 
     <!-- Heading selector -->
     <div class="toolbar-group" v-if="toolbar.includes('heading')">
-      <select v-model="localHeading" @change="handleHeading" class="toolbar-select">
+      <select 
+        v-model="localHeading" 
+        @change="handleHeading" 
+        class="toolbar-select"
+        aria-label="Seleziona stile titolo"
+      >
         <option value="">Normale</option>
         <option value="h1" style="font-weight:bold; font-size: 2em">Titolo 1</option>
         <option value="h2" style="font-weight:bold; font-size: 1.8em">Titolo 2</option>
@@ -24,17 +34,37 @@
 
     <!-- Color pickers -->
     <div class="toolbar-group" v-if="toolbar.includes('color')">
-      <div class="color-picker-wrapper">
-        <input type="color" v-model="localColor" @change="$emit('apply-color', localColor)" title="Colore testo" class="toolbar-color" />
-        <input type="color" v-model="localHighlight" @change="$emit('apply-highlight', localHighlight)" title="Colore sfondo" class="toolbar-color" />
+      <div class="color-picker-wrapper" role="group" aria-label="Selettori colore">
+        <input 
+          type="color" 
+          v-model="localColor" 
+          @change="$emit('apply-color', localColor)" 
+          title="Colore testo" 
+          class="toolbar-color"
+          aria-label="Colore testo"
+        />
+        <input 
+          type="color" 
+          v-model="localHighlight" 
+          @change="$emit('apply-highlight', localHighlight)" 
+          title="Colore sfondo" 
+          class="toolbar-color"
+          aria-label="Colore evidenziatore"
+        />
       </div>
     </div>
 
     <!-- Font size -->
     <template v-if="toolbar.includes('fontsize')">
-      <div class="toolbar-separator"></div>
+      <div class="toolbar-separator" role="separator"></div>
       <div class="toolbar-group">
-        <select v-model="localFontSize" @change="handleFontSize" class="toolbar-select" style="width:65px;">
+        <select 
+          v-model="localFontSize" 
+          @change="handleFontSize" 
+          class="toolbar-select" 
+          style="width:65px;"
+          aria-label="Seleziona dimensione font"
+        >
           <option value="">Dim.</option>
           <option v-for="size in fontSizes" :key="size" :value="size">{{ size }}px</option>
         </select>
@@ -43,69 +73,74 @@
 
     <!-- Text alignment -->
     <template v-if="toolbar.includes('alignment')">
-      <div class="toolbar-separator"></div>
-      <div class="toolbar-group">
-        <button @click="$emit('align', 'left')" title="Allinea a sinistra" class="toolbar-btn">⟪</button>
-        <button @click="$emit('align', 'center')" title="Centra" class="toolbar-btn">⟫⟪</button>
-        <button @click="$emit('align', 'right')" title="Allinea a destra" class="toolbar-btn">⟫</button>
-        <button @click="$emit('align', 'justify')" title="Giustifica" class="toolbar-btn">⟪⟫</button>
+      <div class="toolbar-separator" role="separator"></div>
+      <div class="toolbar-group" role="group" aria-label="Allineamento testo">
+        <button @click="$emit('align', 'left')" title="Allinea a sinistra" class="toolbar-btn" aria-label="Allinea a sinistra">⟪</button>
+        <button @click="$emit('align', 'center')" title="Centra" class="toolbar-btn" aria-label="Allinea al centro">⟫⟪</button>
+        <button @click="$emit('align', 'right')" title="Allinea a destra" class="toolbar-btn" aria-label="Allinea a destra">⟫</button>
+        <button @click="$emit('align', 'justify')" title="Giustifica" class="toolbar-btn" aria-label="Giustifica">⟪⟫</button>
       </div>
     </template>
 
     <!-- Formatting buttons -->
     <template v-if="hasFormattingButtons">
-      <div class="toolbar-separator"></div>
-      <div class="toolbar-group">
-        <button v-if="toolbar.includes('bold')" type="button" @click="$emit('format', 'bold')" title="Grassetto (Ctrl+B)" class="toolbar-btn">
+      <div class="toolbar-separator" role="separator"></div>
+      <div class="toolbar-group" role="group" aria-label="Formattazione testo">
+        <button v-if="toolbar.includes('bold')" type="button" @click="$emit('format', 'bold')" title="Grassetto (Ctrl+B)" class="toolbar-btn" aria-label="Grassetto">
           <strong>B</strong>
         </button>
-        <button v-if="toolbar.includes('italic')" type="button" @click="$emit('format', 'italic')" title="Corsivo (Ctrl+I)" class="toolbar-btn">
+        <button v-if="toolbar.includes('italic')" type="button" @click="$emit('format', 'italic')" title="Corsivo (Ctrl+I)" class="toolbar-btn" aria-label="Corsivo">
           <em>I</em>
         </button>
-        <button v-if="toolbar.includes('underline')" type="button" @click="$emit('format', 'underline')" title="Sottolineato (Ctrl+U)" class="toolbar-btn">
+        <button v-if="toolbar.includes('underline')" type="button" @click="$emit('format', 'underline')" title="Sottolineato (Ctrl+U)" class="toolbar-btn" aria-label="Sottolineato">
           <span style="text-decoration: underline;">U</span>
         </button>
-        <button v-if="toolbar.includes('strikethrough')" type="button" @click="$emit('format', 'strikethrough')" title="Barrato" class="toolbar-btn">
+        <button v-if="toolbar.includes('strikethrough')" type="button" @click="$emit('format', 'strikethrough')" title="Barrato" class="toolbar-btn" aria-label="Barrato">
           <span style="text-decoration:line-through;">S</span>
         </button>
-        <button v-if="toolbar.includes('superscript')" type="button" @click="$emit('format-sup-sub', 'sup')" title="Apice" class="toolbar-btn">X<sup>2</sup></button>
-        <button v-if="toolbar.includes('subscript')" type="button" @click="$emit('format-sup-sub', 'sub')" title="Pedice" class="toolbar-btn">H<sub>2</sub></button>
-        <button v-if="toolbar.includes('switchcase')" type="button" @click="$emit('toggle-case')" title="Maiuscolo/Minuscolo" class="toolbar-btn">Aa</button>
-        <button v-if="toolbar.includes('clear')" @click="$emit('remove-formatting')" title="Rimuovi formattazione" class="toolbar-btn">Clear</button>
+        <button v-if="toolbar.includes('superscript')" type="button" @click="$emit('format-sup-sub', 'sup')" title="Apice" class="toolbar-btn" aria-label="Apice">X<sup>2</sup></button>
+        <button v-if="toolbar.includes('subscript')" type="button" @click="$emit('format-sup-sub', 'sub')" title="Pedice" class="toolbar-btn" aria-label="Pedice">H<sub>2</sub></button>
+        <button v-if="toolbar.includes('switchcase')" type="button" @click="$emit('toggle-case')" title="Maiuscolo/Minuscolo" class="toolbar-btn" aria-label="Cambia maiuscolo/minuscolo">Aa</button>
+        <button v-if="toolbar.includes('clear')" @click="$emit('remove-formatting')" title="Rimuovi formattazione" class="toolbar-btn" aria-label="Rimuovi formattazione">Clear</button>
       </div>
     </template>
 
     <!-- Lists -->
     <template v-if="toolbar.includes('list')">
-      <div class="toolbar-separator"></div>
-      <div class="toolbar-group">
-        <button @click="$emit('toggle-list', 'ul')" title="Elenco puntato" class="toolbar-btn">●.</button>
-        <button @click="$emit('toggle-list', 'ol')" title="Elenco numerato" class="toolbar-btn">1.</button>
+      <div class="toolbar-separator" role="separator"></div>
+      <div class="toolbar-group" role="group" aria-label="Liste">
+        <button @click="$emit('toggle-list', 'ul')" title="Elenco puntato" class="toolbar-btn" aria-label="Elenco puntato">●.</button>
+        <button @click="$emit('toggle-list', 'ol')" title="Elenco numerato" class="toolbar-btn" aria-label="Elenco numerato">1.</button>
       </div>
     </template>
 
     <!-- Indent -->
     <template v-if="toolbar.includes('indent')">
-      <div class="toolbar-separator"></div>
-      <div class="toolbar-group">
-        <button @click="$emit('indent', 'outdent')" title="Riduci rientro" class="toolbar-btn">◀</button>
-        <button @click="$emit('indent', 'indent')" title="Aumenta rientro" class="toolbar-btn">▶</button>
+      <div class="toolbar-separator" role="separator"></div>
+      <div class="toolbar-group" role="group" aria-label="Rientro">
+        <button @click="$emit('indent', 'outdent')" title="Riduci rientro" class="toolbar-btn" aria-label="Riduci rientro">◀</button>
+        <button @click="$emit('indent', 'indent')" title="Aumenta rientro" class="toolbar-btn" aria-label="Aumenta rientro">▶</button>
       </div>
     </template>
 
     <!-- Link -->
     <template v-if="toolbar.includes('link')">
-      <div class="toolbar-separator"></div>
+      <div class="toolbar-separator" role="separator"></div>
       <div class="toolbar-group">
-        <button @click="$emit('insert-link')" title="Inserisci Link" class="toolbar-btn">🔗</button>
+        <button @click="$emit('insert-link')" title="Inserisci Link" class="toolbar-btn" aria-label="Inserisci link">🔗</button>
       </div>
     </template>
 
     <!-- Placeholders -->
     <template v-if="placeholders && placeholders.length > 0 && toolbar.includes('placeholder')">
-      <div class="toolbar-separator"></div>
+      <div class="toolbar-separator" role="separator"></div>
       <div class="toolbar-group">
-        <select v-model="localPlaceholder" @change="handlePlaceholder" class="toolbar-select toolbar-select-placeholder">
+        <select 
+          v-model="localPlaceholder" 
+          @change="handlePlaceholder" 
+          class="toolbar-select toolbar-select-placeholder"
+          aria-label="Inserisci campo placeholder"
+        >
           <option value="">Inserisci campo...</option>
           <optgroup v-for="(group, i) in placeholders" :key="i" :label="group.label">
             <option v-for="(item, j) in group.items" :key="j" :value="item.value">
@@ -118,9 +153,15 @@
 
     <!-- HTML mode toggle -->
     <template v-if="toolbar.includes('html')">
-      <div class="toolbar-separator"></div>
+      <div class="toolbar-separator" role="separator"></div>
       <div class="toolbar-group">
-        <button @click="$emit('toggle-html')" :class="['toolbar-btn', { active: htmlMode }]" title="Mostra codice HTML">&lt;/&gt;</button>
+        <button 
+          @click="$emit('toggle-html')" 
+          :class="['toolbar-btn', { active: htmlMode }]" 
+          title="Mostra codice HTML"
+          aria-label="Mostra codice HTML"
+          :aria-pressed="htmlMode"
+        >&lt;/&gt;</button>
       </div>
     </template>
   </div>

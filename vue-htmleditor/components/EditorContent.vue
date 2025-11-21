@@ -2,6 +2,10 @@
   <div
     ref="editable"
     class="editor"
+    role="textbox"
+    :aria-label="readonly ? 'Editor di testo in sola lettura' : 'Editor di testo modificabile'"
+    :aria-readonly="readonly"
+    :aria-multiline="true"
     :contenteditable="!readonly"
     @input="handleInput"
     @mousedown="handleClick"

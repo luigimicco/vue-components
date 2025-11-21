@@ -6,9 +6,18 @@
       class="html-source"
       :style="editorStyle"
       spellcheck="false"
+      aria-label="Codice HTML sorgente"
+      role="textbox"
+      :aria-multiline="true"
     ></textarea>
   </div>
-  <div v-else-if="readonly && htmlMode" class="html-source-readonly" v-text="content"></div>
+  <div 
+    v-else-if="readonly && htmlMode" 
+    class="html-source-readonly" 
+    v-text="content"
+    role="document"
+    aria-label="Codice HTML in sola lettura"
+  ></div>
 </template>
 
 <script>
