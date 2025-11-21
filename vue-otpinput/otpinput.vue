@@ -1,6 +1,10 @@
 <template>
   
-    <div class="otp-inputs">
+    <div 
+      class="otp-inputs"
+      role="group"
+      :aria-label="`Inserisci codice di verifica a ${digits} cifre`"
+    >
       <input
         v-for="(val, idx) in otp"
         :key="idx"

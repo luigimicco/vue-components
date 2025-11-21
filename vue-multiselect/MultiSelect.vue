@@ -1,9 +1,24 @@
 <template>
   <!-- Wrapper con direttiva custom per chiudere dropdown clickando fuori -->
-  <div ref="wrapper" class="multi-select-wrapper" v-click-outside="closeDropdown">
+  <div 
+    ref="wrapper" 
+    class="multi-select-wrapper" 
+    v-click-outside="closeDropdown"
+    role="combobox"
+    :aria-expanded="showDropdown"
+    :aria-haspopup="'listbox'"
+    :aria-label="multiple ? 'Selezione multipla' : 'Selezione singola'"
+  >
 
     <!-- Area elementi selezionati -->
-    <div class="selected-items" @click="toggleDropdown">
+    <div 
+      class="selected-items" 
+      @click="toggleDropdown"
+      :aria-label="`${selectedItemMap.length} elementi selezionati`"
+      tabindex="0"
+      @keydown.enter="toggleDropdown"
+      @keydown.space.prevent="toggleDropdown"
+    >
       <div class="selected-items-wrapper">
         <!-- Ciclo sugli elementi selezionati -->
         <div
@@ -11,6 +26,8 @@
           :key="item.key"
           class="selected-item"
           :class="{ 'selected-item-expand': !multiple }"
+          role="option"
+          :aria-selected="true"
         >
           <!-- Slot personalizzabili per elementi selezionati, default con testo e pulsante rimuovi -->
           <slot
@@ -24,7 +41,9 @@
               type="button"
               class="remove-button"
               @click.stop="removeItem(item.item)"
-              :title="`Rimuovi ${item.display}`">
+              :title="`Rimuovi ${item.display}`"
+              :aria-label="`Rimuovi ${item.display}`"
+            >
               ×
             </button>
           </slot>
@@ -32,7 +51,11 @@
       </div>
 
       <!-- Freccia a tendina per apertura dropdown -->
-      <div class="dropdown-arrow" :class="{ 'dropdown-arrow--active': showDropdown }">▾</div>
+      <div 
+        class="dropdown-arrow" 
+        :class="{ 'dropdown-arrow--active': showDropdown }"
+        aria-hidden="true"
+      >▾</div>
     </div>
 
     <!-- Dropdown con ricerca e lista opzioni -->
@@ -44,25 +67,42 @@
           type="text"
           :placeholder="searchPlaceholder"
           class="search-input"
+          role="searchbox"
+          :aria-label="searchPlaceholder"
+          aria-autocomplete="list"
+          :aria-controls="'options-list-' + _uid"
           @keydown.esc="closeDropdown"
           @keydown.down.prevent="navigateOptions(1)"
           @keydown.up.prevent="navigateOptions(-1)"
           @keydown.enter.prevent="selectHighlighted"
         />
-        <div class="search-icon">
+        <div class="search-icon" aria-hidden="true">
           🔍
         </div>
       </div>
 
       <!-- Loading -->
-      <div v-if="isLoading" class="options-loading">
+      <div 
+        v-if="isLoading" 
+        class="options-loading"
+        role="status"
+        aria-live="polite"
+        aria-label="Caricamento opzioni in corso"
+      >
         <span class="loading-spinner"></span>
         <span>Caricamento...</span>
       </div>
 
       <!-- Lista delle opzioni filtrate -->
       <div v-if="!isLoading && filteredOptions.length" class="dropdown">
-        <div class="options-list" ref="optionsList">
+        <div 
+          class="options-list" 
+          ref="optionsList"
+          role="listbox"
+          :id="'options-list-' + _uid"
+          :aria-multiselectable="multiple"
+          :aria-label="'Opzioni disponibili'"
+        >
           <div
             v-for="(option, index) in filteredOptions"
             :key="getItemKey(option)"
@@ -72,6 +112,9 @@
               selected: isSelected(option),
               disabled: isDisabled(option),
             }"
+            role="option"
+            :aria-selected="isSelected(option)"
+            :aria-disabled="isDisabled(option)"
             @click.stop="!isDisabled(option) && selectItem(option)"
             @mouseenter="highlightedIndex = index"
           >
@@ -83,7 +126,12 @@
       </div>
 
       <!-- Messaggio quando non ci sono risultati -->
-      <div v-else-if="!isLoading && searchQuery && !filteredOptions.length" class="no-results">
+      <div 
+        v-else-if="!isLoading && searchQuery && !filteredOptions.length" 
+        class="no-results"
+        role="status"
+        aria-live="polite"
+      >
         <slot name="no-results">
           <span>Nessun risultato trovato per "{{ searchQuery }}"</span>
         </slot>

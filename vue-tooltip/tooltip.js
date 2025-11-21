@@ -24,6 +24,11 @@ export default {
     tooltip.style.display = 'flex';
     tooltip.style.alignItems = 'center';
 
+    // Accessibilità
+    tooltip.setAttribute('role', 'tooltip');
+    tooltip.setAttribute('aria-hidden', 'true');
+    tooltip.id = 'tooltip-' + Math.random().toString(36).substr(2, 9);
+
     const textSpan = document.createElement('span');
     textSpan.textContent = binding.value || 'Tooltip';
     textSpan.style.backgroundColor = 'rgba(0,0,0,0.85)';
@@ -170,11 +175,13 @@ export default {
 
     function show(event) {
       tooltip.style.visibility = 'visible';
+      tooltip.setAttribute('aria-hidden', 'false');
       setPosition(event);
     }
 
     function hide() {
       tooltip.style.visibility = 'hidden';
+      tooltip.setAttribute('aria-hidden', 'true');
     }
 
     // Supporto tastiera

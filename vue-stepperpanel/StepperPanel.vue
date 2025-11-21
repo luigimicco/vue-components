@@ -1,10 +1,15 @@
 <template>
-  <div class="stepper-container">
-    <div class="stepper-header-number">
+  <div 
+    class="stepper-container"
+    role="region"
+    aria-label="Procedura guidata a step"
+  >
+    <div class="stepper-header-number" role="list" aria-label="Indicatori di progresso">
       <div
         v-for="i in stepSlots.length"
         :class="['step-item', { active: i-1 === currentStep, completed: i <= currentStep }]"
         :key="'point_' + i"
+        role="listitem"
       >
 
         <div 
@@ -13,13 +18,14 @@
           :tabindex="canNavigateToStep(i-1) ? 0 : -1"
           :aria-label="`Step ${i}`"
           :aria-current="i-1 === currentStep ? 'step' : undefined"
+          :aria-disabled="!canNavigateToStep(i-1)"
           @click="goToStep(i - 1)"
           @keydown.enter="goToStep(i - 1)"
           @keydown.space.prevent="goToStep(i - 1)"
         >
           {{ i }}
         </div>
-        <div v-if="i < stepSlots.length" class="step-line"></div>
+        <div v-if="i < stepSlots.length" class="step-line" aria-hidden="true"></div>
       </div>
     </div>
     <div class="stepper-header-title">
@@ -28,7 +34,7 @@
         :class="['step-title-item', { active: i-1 === currentStep, completed: i <= currentStep }]"
         :key="'title_' + i"
       >
-        <div class="step-title"><slot :name="'label-' + (i-1)" /></div>
+        <div class="step-title" :id="`step-${i-1}-label`"><slot :name="'label-' + (i-1)" /></div>
       </div>
     </div>
 
